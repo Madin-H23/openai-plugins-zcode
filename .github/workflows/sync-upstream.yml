@@ -1,0 +1,42 @@
+name: 同步上游并重生成 ZCode 市场清单
+
+on:
+  schedule:
+    - cron: "0 3 * * *" # 每日 UTC 3:00（北京时间 11:00）检查上游
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出本仓库（含适配提交）
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # 允许 push 时快进合并上游历史
+          ref: main
+
+      - name: 同步上游 openai/plugins
+        run: |
+          git remote add upstream https://github.com/openai/plugins.git
+          git fetch upstream main
+          git merge --ff-only upstream/main || {
+            echo "::error::上游历史分叉，无法快进合并，需要人工处理"; exit 1; }
+
+      - name: 重生成 ZCode 市场清单
+        run: python generate_marketplace.py
+
+      - name: 有变化才提交推送
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- .claude-plugin/marketplace.json; then
+            echo "清单无变化"
+          else
+            git add .claude-plugin/marketplace.json
+            git commit -m "chore: 同步上游并重生成 ZCode 市场清单"
+            git push
+          fi
