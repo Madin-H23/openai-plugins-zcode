@@ -15,7 +15,17 @@ import os
 import re
 import sys
 
-ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "upstream")
+# Repo layout: when run inside the fork checkout, __file__ sits at the repo
+# root and the Codex manifest is at .agents/plugins/marketplace.json there.
+# When run from D:\Develop\openai-plugins-adapter (local engineering dir),
+# the clone lives in the ./upstream subdirectory.
+_SELF_DIR = os.path.dirname(os.path.abspath(__file__))
+_CANDIDATE_ROOTS = [_SELF_DIR, os.path.join(_SELF_DIR, "upstream")]
+ROOT = next(
+    (c for c in _CANDIDATE_ROOTS
+     if os.path.isfile(os.path.join(c, ".agents", "plugins", "marketplace.json"))),
+    _CANDIDATE_ROOTS[0],
+)
 SRC = os.path.join(ROOT, ".agents", "plugins", "marketplace.json")
 OUT = os.path.join(ROOT, ".claude-plugin", "marketplace.json")
 NAME_RE = re.compile(r"^[a-z0-9][a-z0-9._-]{0,127}$")
