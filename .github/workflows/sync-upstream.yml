@@ -23,8 +23,10 @@ jobs:
         run: |
           git remote add upstream https://github.com/openai/plugins.git
           git fetch upstream main
-          git merge --ff-only upstream/main || {
-            echo "::error::上游历史分叉，无法快进合并，需要人工处理"; exit 1; }
+          # 本仓库在 fork 基础上追加了适配提交，上游一前进 ff-only 必然分叉；
+          # rebase 到上游 main 后我们的适配提交永远在最顶部，仅真冲突才停下
+          git rebase upstream/main || {
+            echo "::error::rebase 出现冲突，需要人工处理：git rebase --abort 后手工合并"; exit 1; }
 
       - name: 重生成 ZCode 市场清单
         run: python generate_marketplace.py
@@ -38,5 +40,6 @@ jobs:
           else
             git add .claude-plugin/marketplace.json
             git commit -m "chore: 同步上游并重生成 ZCode 市场清单"
-            git push
           fi
+          # 检出时 persist-credentials=true，push 用的是 GITHUB_TOKEN（contents: write）
+          git push

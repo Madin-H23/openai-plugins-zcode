@@ -451,6 +451,17 @@
         "url": "https://github.com/CrowdStrike/fusion-skills.git"
       },
       "description": "External git plugin (upstream Codex marketplace)"
+    },
+    {
+      "name": "qodo",
+      "source": {
+        "source": "git",
+        "url": "https://github.com/qodo-ai/qodo-skills.git",
+        "path": "codex-packages/qodo"
+      },
+      "description": "External git plugin (upstream Codex marketplace)",
+      "displayName": "Qodo",
+      "category": "Developer Tools"
     }
   ]
 }
