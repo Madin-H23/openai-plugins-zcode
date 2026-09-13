@@ -265,7 +265,7 @@
       "name": "codex-security",
       "source": "plugins/codex-security",
       "description": "Codex Security workflows for security scans, analysis, and investigation.",
-      "version": "0.1.22",
+      "version": "0.1.24",
       "category": "Security"
     },
     {
