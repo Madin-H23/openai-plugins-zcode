@@ -21,12 +21,15 @@ jobs:
 
       - name: 同步上游 openai/plugins
         run: |
+          # rebase 会重写提交，需要 committer 身份——必须在 rebase 之前配置
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git remote add upstream https://github.com/openai/plugins.git
           git fetch upstream main
           # 本仓库在 fork 基础上追加了适配提交，上游一前进 ff-only 必然分叉；
           # rebase 到上游 main 后我们的适配提交永远在最顶部，仅真冲突才停下
           git rebase upstream/main || {
-            echo "::error::rebase 出现冲突，需要人工处理：git rebase --abort 后手工合并"; exit 1; }
+            echo "::error::rebase 失败（上游与适配提交真冲突或环境异常），需要人工处理"; exit 1; }
 
       - name: 重生成 ZCode 市场清单
         run: python generate_marketplace.py
@@ -42,4 +45,6 @@ jobs:
             git commit -m "chore: 同步上游并重生成 ZCode 市场清单"
           fi
           # 检出时 persist-credentials=true，push 用的是 GITHUB_TOKEN（contents: write）
-          git push
+          # rebase 重写了本地提交，普通 push 会 non-fast-forward，必须带 lease 强推；
+          # --force-with-lease 仍防他人并发推送
+          git push --force-with-lease
