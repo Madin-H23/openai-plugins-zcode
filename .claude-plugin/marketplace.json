@@ -111,7 +111,7 @@
       "name": "github",
       "source": "plugins/github",
       "description": "Inspect repositories, triage pull requests and issues, debug CI, and publish changes through a hybrid GitHub connector and CLI workflow.",
-      "version": "0.1.11",
+      "version": "0.1.12",
       "category": "Developer Tools"
     },
     {
